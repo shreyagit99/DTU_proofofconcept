@@ -13,6 +13,66 @@ from keras.preprocessing.image import img_to_array, load_img
 from keras.utils.np_utils import to_categorical
 import tensorflow as tf
 import cv2
+ #importing the dataset 
+ 
+base_dir = '/kaggle/input/diabetic-retinopathy-224x224-gaussian-filtered/gaussian_filtered_images/gaussian_filtered_images/'
+
+data = []
+labels = []
+
+# Walk through all the images and convert them to arrays to be fed into the network
+
+for subdir, dirs, files in os.walk(base_dir):
+    for file in files:
+        if file.endswith('.pkl') is False:
+            filepath = subdir + os.sep + file
+            image = load_img(filepath, target_size=(224,224))
+            # image = cv2.resize(image, (122,122))
+            image = img_to_array(image)
+            data.append(image)
+        
+            label = filepath.split(os.path.sep)[-2]
+            labels.append(label)
+        
+        else:
+            continue
+data = np.stack(data)
+data /= 255.0
+labels = np.array(labels)
+
+print(np.unique(labels))
+
+# Shuffle the image data and labels in unison 
+X = data
+y = labels
+le=LabelEncoder()
+y=le.fit_transform(y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15)
+
+y_train = to_categorical(y_train)
+y_test = to_categorical(y_test)
+
+#augmenting the images
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+training_images = np.expand_dims(X_train, axis=3)
+testing_images = np.expand_dims(X_test, axis=3)
+
+train_datagen = ImageDataGenerator(
+    
+    rotation_range=40,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest')
+
+validation_datagen = ImageDataGenerator()
+train_datagen.fit(X_train)
+validation_datagen.fit(X_test)
+print(training_images.shape)
+print(testing_images.shape)
+
 
 ##VGG NETWORK
 
