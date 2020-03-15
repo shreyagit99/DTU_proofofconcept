@@ -1,0 +1,80 @@
+##all the necessary libraries are imported
+
+import numpy as np 
+import pandas as pd
+import cv2
+import seaborn as sns
+import matplotlib.pyplot as plt
+import random
+import os
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from keras.preprocessing.image import img_to_array, load_img
+from keras.utils.np_utils import to_categorical
+import tensorflow as tf
+import cv2
+
+##VGG NETWORK
+
+from keras.optimizers import Adam
+from keras.models import Sequential
+from keras.layers.core import Activation
+from keras.layers.core import Flatten
+from keras.layers.core import Dense
+from keras.applications.vgg16 import VGG16
+from tensorflow.keras.optimizers import RMSprop
+
+# Generate the trained model and set all layers to be trainable
+trained_model = VGG16(input_shape=(224,224,3), include_top=False)
+
+for layer in trained_model.layers:
+    layer.trainable = True
+
+# Construct the model and compile
+mod1 = Flatten()
+mod_final = Dense(5, activation='softmax')
+
+model = Sequential([trained_model, mod1, mod_final])
+model.summary()
+
+model.compile(loss='categorical_crossentropy',optimizer=RMSprop(lr=1e-5), metrics=['accuracy'])
+# Fit the model to the data and validate
+# Fit the model to the data and validate
+history=model.fit_generator(train_datagen.flow(X_train, y_train,
+                                     batch_size=32),
+                        epochs=30,
+                        validation_data=validation_datagen.flow(X_test, y_test,batch_size=32),
+                        verbose=2)
+                        
+# Plot the model results using seaborn and matplotlib
+sns.set(style='darkgrid')
+
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
+
+
+import matplotlib.pyplot as plt
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs = range(len(acc))
+
+plt.plot(epochs, acc, 'bo', label='Training accuracy')
+plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
+plt.title('Training and validation accuracy')
+
+plt.figure()
+
+plt.plot(epochs, loss, 'bo', label='Training Loss')
+plt.plot(epochs, val_loss, 'b', label='Validation Loss')
+plt.title('Training and validation loss')
+plt.legend()
+
+plt.show()
